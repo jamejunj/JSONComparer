@@ -15,7 +15,7 @@ var result = [];
 const compareObjects = (asis, expect, pointer="") => {
     for (let key in expect) {
         if (asis !== null && asis.hasOwnProperty(key)) {
-            if (typeof asis[key] === 'object' && typeof expect[key] === 'object') {
+            if (asis[key] !== null && typeof asis[key] === 'object' && expect[key]!== null &&typeof expect[key] === 'object') {
                 compareObjects(asis[key], expect[key], `${pointer}${(!isNaN(Number(key))) ? `[${key}]` : "." + key}`);
             }
             else {
