@@ -87,7 +87,7 @@ form.addEventListener('submit', (e) => {
     console.log(result);
 
     result.forEach((item) => {
-        resultDiv.innerHTML += `<div class="result">
+        resultDiv.innerHTML += `<div class="result-line">
                 <div class="d-flex align-items-center">
                     <div class="badge rounded-pill badge-${item.type} m-1">${item.log}</div>
                     <div>${item.message}</div>
@@ -96,7 +96,7 @@ form.addEventListener('submit', (e) => {
     })
 
     if (result.length === 0) {
-        resultDiv.innerHTML += `<div class="result">
+        resultDiv.innerHTML += `<div class="result-line">
                 <div class="d-flex align-items-center">
                     <div class="badge rounded-pill badge-success m-1">OK</div>
                     <div>${ "Object are identical" }</div>
@@ -137,4 +137,27 @@ expect.addEventListener('blur', () => {
     console.log(expectObject)
 
     expect.value = JSON.stringify(expectObject, null, 2);
+});
+
+const jsonPicker1 = document.querySelector('input[name=jsonPicker1]');
+const jsonPicker2 = document.querySelector('input[name=jsonPicker2]');
+
+jsonPicker1.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    const reader = new FileReader();
+    reader.onload = () => {
+        expect.value = reader.result;
+        expect.dispatchEvent(new Event('blur'));
+    }
+    reader.readAsText(file);
+});
+
+jsonPicker2.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    const reader = new FileReader();
+    reader.onload = () => {
+        asis.value = reader.result;
+        asis.dispatchEvent(new Event('blur'));
+    }
+    reader.readAsText(file);
 });
