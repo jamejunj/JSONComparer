@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JSON Comparer</title>
+    <!-- bootstrap -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="style.css">
+    <script defer src="script.js"></script>
+</head>
+<body>
+<div class="container-fluid mt-2">
+    <h1>JSON Comparer</h1>
+    <div class="alert alert-info">
+        <strong>Info!</strong> Please enter JSON in the textarea and click on compare button.
+    </div>
+    <form>
+        <div class="row">
+            <div class="col-md-6">
+                <h2>JSON1</h2>
+                <textarea name="expect" class="form-control" rows="10"></textarea>
+            </div>
+            <div class="col-md-6">
+                <h2>JSON2</h2>
+                <textarea  name="asis" class="form-control" rows="10"></textarea>
+            </div>
+        </div>  
+        <div class="row mt-2">
+            <div class="col-md-12">
+                <button class="btn btn-primary">Compare</button>
+            </div>
+        </div>
+    </form>
+    <div class="card result mt-2">
+        <div class="card-header">
+            <h5>Result</h5>
+        </div>
+        <div class="card-body">
+            <div class="result">
+                <div class="d-flex align-items-center">
+                    <div class="badge rounded-pill badge-primary m-1">Info</div>
+                    <div>press compare to start</div>
+                </div>
+            </div>
+        </div>
+       
+    </div>
+</div>
+</body>
+</html>
