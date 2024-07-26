@@ -12,6 +12,19 @@ var expectObject = {};
 
 var result = [];
 
+const getDisplayValue = (value) => {
+    if (typeof value === 'object') {
+        return JSON.stringify(value);
+    }
+    if (typeof value === 'string') {
+        return `"${value}"`;
+    }
+    if (value === null) {
+        return "null";
+    }
+    return value;
+};
+
 const compareObjects = (asis, expect, pointer="") => {
     for (let key in expect) {
         if (asis !== null && asis.hasOwnProperty(key)) {
@@ -19,18 +32,6 @@ const compareObjects = (asis, expect, pointer="") => {
                 compareObjects(asis[key], expect[key], `${pointer}${(!isNaN(Number(key))) ? `[${key}]` : "." + key}`);
             }
             else {
-                /* compare value */
-                if (asis[key] !== expect[key]) {
-                    result.push({
-                        pointer: `${pointer}.${key}`,
-                        asis: asis[key],
-                        expect: expect[key],
-                        key: key,
-                        type: "warning",
-                        log: "Warning",
-                        message: `Value mismatch at ${pointer}${(!isNaN(Number(key))) ? `[${key}]` :  "." + key} (expected ${expect[key]}, actual ${asis[key]})`
-                    });
-                }
                 /* compare type */
                 if (typeof asis[key] !== typeof expect[key]) {
                     result.push({
@@ -40,10 +41,21 @@ const compareObjects = (asis, expect, pointer="") => {
                         key: key,
                         type: "danger",
                         log: "Error",
-                        message: `Type mismatch at ${pointer}${(!isNaN(Number(key))) ? `[${key}]` :  "." + key} (expected ${typeof expect[key]}, actual ${typeof asis[key]})`
+                        message: `Type mismatch at ${pointer}${(!isNaN(Number(key))) ? `[${key}]` :  "." + key} (expected ${getDisplayValue(typeof expect[key])}, actual ${getDisplayValue(typeof asis[key])})`
                     });
                 }
-
+                /* compare value */
+                else if (asis[key] !== expect[key]) {
+                    result.push({
+                        pointer: `${pointer}.${key}`,
+                        asis: asis[key],
+                        expect: expect[key],
+                        key: key,
+                        type: "warning",
+                        log: "Warning",
+                        message: `Value mismatch at ${pointer}${(!isNaN(Number(key))) ? `[${key}]` :  "." + key} (expected ${getDisplayValue(expect[key])}, actual ${getDisplayValue(asis[key])})`
+                    });
+                }
             }
         }else{
             result.push({
@@ -53,7 +65,7 @@ const compareObjects = (asis, expect, pointer="") => {
                 key: key,
                 type: "danger",
                 log: "Error",
-                message: `Key not found at ${pointer}${(!isNaN(Number(key))) ? `[${key}]` :  "." + key}  (expected ${key})`
+                message: `Property not found at ${pointer}${(!isNaN(Number(key))) ? `[${key}]` :  "." + key}  (property: ${getDisplayValue(key)})`
             });
         }
     }
@@ -67,7 +79,7 @@ const compareObjects = (asis, expect, pointer="") => {
                 key: key,
                 type: "info",
                 log: "Info",
-                message: `The actual JSON have more key than expact at ${pointer}${(!isNaN(Number(key))) ? `[${key}]` :  "." + key} (key: ${key})`
+                message: `The actual JSON have more property than expacted JSON at ${pointer}${(!isNaN(Number(key))) ? `[${key}]` :  "." + key} (property: ${getDisplayValue(key)})`
             });
         }
     }
