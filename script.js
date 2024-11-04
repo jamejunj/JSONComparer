@@ -1,4 +1,6 @@
-const form = document.querySelector('form');
+const form = document.querySelector('form#main');
+const query = document.querySelector('form#query');
+
 
 const alertMsg = document.querySelector('.alert');
 
@@ -7,8 +9,20 @@ const expect = document.querySelector('textarea[name=expect]');
 
 const resultDiv = document.querySelector('.result');
 
-var asisObject = {};
-var expectObject = {};
+const saveButton = document.querySelector('button[name=saveResult]');
+const loadButton = document.querySelector('button[name=loadResult]');
+
+var data = {
+    "is_active": true,
+    "asis": {},
+    "expect": {}
+};
+
+var searchResult = {
+    "is_active": false,
+    "asis": {},
+    "expect": {}
+};
 
 var result = [];
 
@@ -33,7 +47,7 @@ const compareObjects = (asis, expect, pointer="") => {
             }
             else {
                 /* compare type */
-                if (typeof asis[key] !== typeof expect[key]) {
+                if (asis[key]!==null && typeof asis[key] !== typeof expect[key]) {
                     result.push({
                         pointer: `${pointer}.${key}`,
                         asis: asis[key],
@@ -45,7 +59,7 @@ const compareObjects = (asis, expect, pointer="") => {
                     });
                 }
                 /* compare value */
-                else if (asis[key] !== expect[key]) {
+                else if (asis[key] !== expect[key] && expect[key]!==null) {
                     result.push({
                         pointer: `${pointer}.${key}`,
                         asis: asis[key],
@@ -54,6 +68,18 @@ const compareObjects = (asis, expect, pointer="") => {
                         type: "warning",
                         log: "Warning",
                         message: `Value mismatch at ${pointer}${(!isNaN(Number(key))) ? `[${key}]` :  "." + key} (expected ${getDisplayValue(expect[key])}, actual ${getDisplayValue(asis[key])})`
+                    });
+                }
+                /* expected null but actual is not null */
+                else if (asis[key] !== expect[key] && expect[key]===null) {
+                    result.push({
+                        pointer: `${pointer}.${key}`,
+                        asis: asis[key],
+                        expect: expect[key],
+                        key: key,
+                        type: "info",
+                        log: "Info",
+                        message: `The actual JSON have value but the expected is null at ${pointer}${(!isNaN(Number(key))) ? `[${key}]` :  "." + key} (expected to be null, actual ${getDisplayValue(asis[key])})`
                     });
                 }
             }
@@ -85,16 +111,120 @@ const compareObjects = (asis, expect, pointer="") => {
     }
 };
 
+saveButton.addEventListener('click', () => {
+    const date = new Date();
+    const filename = `result-${date.getFullYear()}-${date.getMonth()}-${date.getDate()}-${date.getHours()}-${date.getMinutes()}-${date.getSeconds()}.json`;
+
+    const focusObject = searchResult.is_active ? searchResult : data;
+
+    const downloadJSON = {
+        "expected": focusObject.expect,
+        "actual": focusObject.asis,
+        "result": result
+    }
+    const blob = new Blob([JSON.stringify(downloadJSON, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+
+    a.download = filename;
+
+    document.body.appendChild(a);
+
+    a.click();
+
+    window.URL.revokeObjectURL(url);
+
+    document.body.removeChild(a);
+});
+
+loadButton.addEventListener('click', () => {
+    const fileInput = document.createElement('input');
+    fileInput.type = 'file';
+    fileInput.accept = '.json';
+    fileInput.style.display = 'none';
+    fileInput.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        const reader = new FileReader();
+        reader.onload = () => {
+            const loadedData = JSON.parse(reader.result);
+            data.asis = loadedData.actual;
+            data.expect = loadedData.expected;
+            asis.value = JSON.stringify(data.asis, null, 2);
+            expect.value = JSON.stringify(data.expect, null, 2);
+            form.dispatchEvent(new Event('submit'));
+        }
+    });
+    document.body.appendChild(fileInput);
+    fileInput.click();
+    document.body.removeChild(fileInput);
+});
+
+query.addEventListener('keyup', (e) => {
+
+    const queryJSONText = query.querySelector('input[name="query-string"]').value;
+
+    if (queryJSONText === '') {
+        searchResult.is_active = false;
+        asis.value = JSON.stringify(data.asis, null, 2);
+        expect.value = JSON.stringify(data.expect, null, 2);
+        form.dispatchEvent(new Event('submit'));
+        form.querySelectorAll('textarea').forEach((textarea) => { textarea.readOnly = false; });
+        return;
+    }
+
+
+    const queryJSON = queryJSONText.split('.').slice(1);
+
+    form.querySelectorAll('textarea').forEach((textarea) => { textarea.readOnly = true; });
+
+    searchResult.is_active = true;
+    searchResult.asis = Object.assign({}, data.asis);
+    searchResult.expect = Object.assign({}, data.expect);
+
+    let asisPointer = searchResult.asis;
+    let expectPointer = searchResult.expect;
+
+    queryJSON.forEach((key) => {
+        if (key.includes('[')) {
+            const index = key.match(/\d+/)[0];
+            key = key.split('[')[0];
+            asisPointer = asisPointer[key][index];
+        } else {
+            asisPointer = asisPointer[key];
+        }
+    });
+
+    queryJSON.forEach((key) => {
+        if (key.includes('[')) {
+            const index = key.match(/\d+/)[0];
+            key = key.split('[')[0];
+            expectPointer = expectPointer[key][index];
+        } else {
+            expectPointer = expectPointer[key];
+        }
+    });
+
+    asis.value = JSON.stringify(asisPointer, null, 2);
+    expect.value = JSON.stringify(expectPointer, null, 2);
+    form.dispatchEvent(new Event('submit'));
+})
+
 form.addEventListener('submit', (e) => {
+
+    e.preventDefault();
+
+    useObject = searchResult.is_active ? searchResult : data;
+
+    console.log(useObject);
 
     resultDiv.innerHTML = '';
     result = [];
 
-    e.preventDefault();
 
     alertMsg.className = 'alert d-none';
 
-    compareObjects(asisObject, expectObject);
+    compareObjects(useObject.asis, useObject.expect);
 
     console.log(result);
 
@@ -119,7 +249,7 @@ form.addEventListener('submit', (e) => {
 
 asis.addEventListener('blur', () => {
     try {
-        asisObject = JSON.parse(asis.value);
+        data.asis = JSON.parse(asis.value);
     }
     catch (error) {
         alertMsg.className = 'alert alert-danger';
@@ -129,14 +259,14 @@ asis.addEventListener('blur', () => {
 
     alertMsg.className = 'alert d-none';
 
-    console.log(asisObject)
+    console.log(data.asis)
 
-    asis.value = JSON.stringify(asisObject, null, 2);
+    asis.value = JSON.stringify(data.asis, null, 2);
 });
 
 expect.addEventListener('blur', () => {
     try {
-        expectObject = JSON.parse(expect.value);
+        data.expect = JSON.parse(expect.value);
     }
     catch (error) {
         alertMsg.className = 'alert alert-danger';
@@ -146,9 +276,9 @@ expect.addEventListener('blur', () => {
 
     alertMsg.className = 'alert d-none';
 
-    console.log(expectObject)
+    console.log(data.expect)
 
-    expect.value = JSON.stringify(expectObject, null, 2);
+    expect.value = JSON.stringify(data.expect, null, 2);
 });
 
 const jsonPicker1 = document.querySelector('input[name=jsonPicker1]');

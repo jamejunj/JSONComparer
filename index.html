@@ -15,10 +15,10 @@
     <div class="alert alert-info">
         <strong>Info!</strong> Please enter JSON in the textarea and click on compare button.
     </div>
-    <form>
+    <form id="main">
         <div class="row">
             <div class="col-md-6">
-                <h2>JSON1</h2>
+                <h2>Expect JSON</h2>
                 <!-- upload JSON -->
                 <div class="d-flex">
                     <label for="jsonPicker1" class="btn btn-secondary">Upload JSON</label>
@@ -27,7 +27,7 @@
                 <textarea name="expect" class="form-control" rows="10"></textarea>
             </div>
             <div class="col-md-6">
-                <h2>JSON2</h2>
+                <h2>Current JSON</h2>
                 <!-- upload JSON -->
                 <div class="d-flex">
                     <label for="jsonPicker2" class="btn btn-secondary">Upload JSON</label>
@@ -39,9 +39,24 @@
         <div class="row mt-2">
             <div class="col-md-12">
                 <button class="btn btn-primary">Compare</button>
+                <button name="saveResult" type="button" class="btn btn-secondary">Save Result</button>
+                <button name="loadResult" type="button" class="btn btn-secondary">Load Result</button>
             </div>
         </div>
     </form>
+    <div class="card setting mt-2">
+        <div class="card-header">
+            <h5>Query</h5>
+        </div>
+        <div class="card-body">
+            <form action="" id="query">
+                <div class="form-group">
+                   <label for="query-string">Query</label>
+                    <input type="text" name="query-string" class="form-control">
+                </div>
+            </form>
+        </div>
+    </div>
     <div class="card result mt-2">
         <div class="card-header">
             <h5>Result</h5>
